@@ -1,15 +1,10 @@
 const path = require("path");
 const express = require("express");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const cookieSession = require("cookie-session");
 const expressLayouts = require("express-ejs-layouts");
 const constants = require("./config/constants");
 
-function createApp(mongoUri) {
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI is required.");
-  }
-
+function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
@@ -23,12 +18,9 @@ function createApp(mongoUri) {
   app.use(express.static(path.join(__dirname, "public")));
 
   app.use(
-    session({
+    cookieSession({
       name: "qs_hw_sid",
-      secret: process.env.SESSION_SECRET || "qs-secondary-hw-record-local-secret",
-      resave: false,
-      saveUninitialized: false,
-      store: MongoStore.create({ mongoUrl: mongoUri }),
+      keys: [process.env.SESSION_SECRET || "qs-secondary-hw-record-local-secret"],
       cookie: {
         httpOnly: true,
         sameSite: "lax",

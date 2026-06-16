@@ -1,6 +1,6 @@
 # Qs Secondary HW Record
 
-A Node.js, MongoDB, and Bootstrap homework checking system for Qs secondary classes.
+A Node.js, PostgreSQL/Neon, and Bootstrap homework checking system for Qs secondary classes.
 
 ## Features
 
@@ -24,7 +24,7 @@ A Node.js, MongoDB, and Bootstrap homework checking system for Qs secondary clas
 ## Setup
 
 1. Copy `.env.example` to `.env`.
-2. Start MongoDB locally or set `MONGODB_URI`.
+2. Set `DATABASE_URL` to a PostgreSQL connection string such as Neon.
 3. Install dependencies:
 
 ```bash
@@ -48,16 +48,15 @@ Open `http://localhost:3000`.
 
 This project can run on Vercel as a Node.js Function through `api/index.js`.
 
-Before deploying, create a hosted MongoDB database such as MongoDB Atlas. The local development MongoDB fallback is not used on Vercel.
+Before deploying, create a hosted PostgreSQL database such as Neon.
 
 Set these Vercel Environment Variables:
 
 ```text
-MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/qs-secondary-hw-record
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require&channel_binding=require
 SESSION_SECRET=use-a-long-random-secret
 ADMIN_USERNAME=Admin
-ADMIN_PASSWORD=QsAdmin
-DISABLE_MEMORY_MONGO=true
+ADMIN_PASSWORD=use-a-strong-password
 ```
 
 Then deploy from this folder:
