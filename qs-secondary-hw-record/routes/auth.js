@@ -17,8 +17,9 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  const username = process.env.ADMIN_USERNAME || "Admin";
-  const password = process.env.ADMIN_PASSWORD || "QsAdmin";
+  const isProduction = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+  const username = process.env.ADMIN_USERNAME || (isProduction ? "" : "Admin");
+  const password = process.env.ADMIN_PASSWORD || (isProduction ? "" : "QsAdmin");
   const usernameMatches = req.body.username === username;
   const passwordMatches = req.body.password === password;
 
