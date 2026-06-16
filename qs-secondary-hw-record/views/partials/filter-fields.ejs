@@ -1,0 +1,40 @@
+<div class="col-md-3 col-xl-2">
+  <label class="form-label">Level</label>
+  <select name="level" class="form-select">
+    <option value="">All Levels</option>
+    <% constants.LEVELS.forEach((level) => { %>
+      <option value="<%= level %>" <%= query.level === level ? "selected" : "" %>><%= level %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="col-md-3 col-xl-2">
+  <label class="form-label">Year</label>
+  <input type="number" name="year" class="form-control" value="<%= query.year || "" %>" placeholder="2026">
+</div>
+<div class="col-md-3 col-xl-2">
+  <label class="form-label">Term</label>
+  <select name="term" class="form-select">
+    <option value="">All Terms</option>
+    <% constants.TERMS.forEach((term) => { %>
+      <option value="<%= term %>" <%= query.term === term ? "selected" : "" %>><%= term %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="col-md-3 col-xl-2">
+  <label class="form-label">Course Day</label>
+  <select name="courseDay" class="form-select">
+    <option value="">All Days</option>
+    <% constants.COURSE_DAYS.forEach((day) => { %>
+      <option value="<%= day %>" <%= query.courseDay === day ? "selected" : "" %>><%= day %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="col-md-3 col-xl-2">
+  <label class="form-label">Class</label>
+  <select name="classGroup" class="form-select">
+    <option value="">A/B</option>
+    <% constants.CLASS_GROUPS.forEach((group) => { %>
+      <option value="<%= group %>" <%= query.classGroup === group ? "selected" : "" %>><%= group %></option>
+    <% }) %>
+  </select>
+</div>

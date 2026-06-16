@@ -1,0 +1,28 @@
+{
+  "name": "qs-secondary-hw-record",
+  "version": "1.0.0",
+  "description": "Qs Secondary HW Record homework checking system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "check": "node --check app.js && node --check api/index.js && node --check server.js && node --check config/constants.js && node --check models/Student.js && node --check models/HomeworkRecord.js && node --check routes/auth.js && node --check routes/dashboard.js && node --check routes/import.js && node --check routes/records.js",
+    "vercel-build": "npm run check"
+  },
+  "dependencies": {
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.1",
+    "mongodb-memory-server": "^11.2.0",
+    "mongoose": "^8.9.5",
+    "multer": "^1.4.5-lts.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "vercel": "^54.14.0"
+  }
+}

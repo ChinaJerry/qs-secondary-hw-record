@@ -1,0 +1,81 @@
+<div class="container-fluid px-4">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Student Setup</p>
+      <h1>Import Students</h1>
+      <p class="text-secondary mb-0">Upload the full class list for this term. A new upload replaces the old list for the selected class.</p>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <form method="post" action="/import" enctype="multipart/form-data" class="row g-3">
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Level</label>
+        <select name="level" class="form-select" required>
+          <% constants.LEVELS.forEach((level) => { %>
+            <option value="<%= level %>"><%= level %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Year</label>
+        <input type="number" name="year" class="form-control" value="2026" required>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Term</label>
+        <select name="term" class="form-select" required>
+          <% constants.TERMS.forEach((term) => { %>
+            <option value="<%= term %>" <%= term === "T2" ? "selected" : "" %>><%= term %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Course Day</label>
+        <select name="courseDay" class="form-select" required>
+          <% constants.COURSE_DAYS.forEach((day) => { %>
+            <option value="<%= day %>"><%= day %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Class</label>
+        <select name="classGroup" class="form-select" required>
+          <% constants.CLASS_GROUPS.forEach((group) => { %>
+            <option value="<%= group %>"><%= group %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">Excel File</label>
+        <input type="file" name="studentFile" class="form-control" accept=".xlsx,.xls,.csv" required>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary px-4">Upload Class List</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="content-card mt-4">
+    <h2 class="h5">Excel Columns</h2>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Student Email</th>
+            <th>Phone</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Example Student</td>
+            <td>QS10001</td>
+            <td>student@example.com</td>
+            <td>0400 000 000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

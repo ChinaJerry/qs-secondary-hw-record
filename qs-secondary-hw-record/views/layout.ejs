@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %> | Qs Secondary HW Record</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <% if (currentUser) { %>
+      <%- include("partials/nav") %>
+    <% } %>
+
+    <main class="<%= currentUser ? "app-shell" : "login-shell" %>">
+      <% if (flash) { %>
+        <div class="container-fluid mb-3">
+          <div class="alert alert-<%= flash.type %> alert-dismissible fade show" role="alert">
+            <%= flash.message %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        </div>
+      <% } %>
+
+      <%- body %>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

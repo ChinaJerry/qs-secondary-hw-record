@@ -1,0 +1,215 @@
+<div class="container-fluid px-4">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Overview</p>
+      <h1>Dashboard</h1>
+      <p class="text-secondary mb-0">Monitor completion by level, term, subject, week, and class.</p>
+    </div>
+    <a href="/import" class="btn btn-primary">Import Students</a>
+  </div>
+
+  <form class="content-card row g-3 align-items-end mb-4" method="get" action="/dashboard">
+    <%- include("partials/filter-fields", { query }) %>
+    <div class="col-md-3 col-xl-2">
+      <label class="form-label">Working Week</label>
+      <input type="number" min="1" max="12" name="week" class="form-control" value="<%= query.week || "" %>" placeholder="All">
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <label class="form-label">Subject</label>
+      <select name="subject" class="form-select">
+        <option value="">All Subjects</option>
+        <% constants.SUBJECTS.forEach((subject) => { %>
+          <option value="<%= subject %>" <%= query.subject === subject ? "selected" : "" %>><%= subject %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-4 col-xl-3">
+      <label class="form-label">Student ID Search</label>
+      <input type="search" name="studentId" class="form-control" value="<%= query.studentId || "" %>" placeholder="Search history">
+    </div>
+    <div class="col-md-4 col-xl-3 d-flex gap-2">
+      <button class="btn btn-primary flex-fill">Apply Filters</button>
+      <a href="/dashboard" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="metric-card">
+        <span>Total Students</span>
+        <strong><%= totalStudents %></strong>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card">
+        <span>Total Records</span>
+        <strong><%= totalRecords %></strong>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card danger">
+        <span>D/E Records</span>
+        <strong><%= incompleteCount %></strong>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card success">
+        <span>Completion Rate</span>
+        <strong><%= completionRate %>%</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-5">
+      <div class="content-card h-100">
+        <h2 class="h5 mb-3">Score Summary</h2>
+        <div class="status-grid">
+          <% statusCards.forEach((status) => { %>
+            <div class="status-tile">
+              <span class="status-code"><%= status.code %></span>
+              <div>
+                <strong><%= status.count %></strong>
+                <p><%= status.label %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-7">
+      <div class="content-card h-100">
+        <h2 class="h5 mb-3">Subject Incomplete Rate</h2>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Total</th>
+                <th>D/E</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!subjectSummary.length) { %>
+                <tr><td colspan="4" class="text-secondary">No records found.</td></tr>
+              <% } %>
+              <% subjectSummary.forEach((item) => { %>
+                <tr>
+                  <td><%= item._id %></td>
+                  <td><%= item.total %></td>
+                  <td><%= item.incomplete %></td>
+                  <td><%= item.total ? Math.round((item.incomplete / item.total) * 100) : 0 %>%</td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form class="content-card mt-4" method="post" action="/dashboard/follow-up-contacted">
+    <input type="hidden" name="returnQuery" value="<%= new URLSearchParams(query).toString() %>">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+      <div>
+        <h2 class="h5 mb-1">D/E Follow-up List</h2>
+        <p class="text-secondary mb-0">Only students with D/E results across 3 or more weeks are listed.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <% const emails = [...new Set(followUpRecords.map((record) => record.student && record.student.studentEmail).filter(Boolean))].join(","); %>
+        <a class="btn btn-outline-primary <%= emails ? "" : "disabled" %>" href="mailto:<%= emails %>">Email Listed Contacts</a>
+        <button class="btn btn-primary <%= followUpRecords.length ? "" : "disabled" %>">Mark Contacted</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Contacted</th>
+            <th>Student</th>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Level</th>
+            <th>Term</th>
+            <th>Day</th>
+            <th>Class</th>
+            <th>D/E Weeks</th>
+            <th>D/E Records</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!followUpRecords.length) { %>
+            <tr><td colspan="11" class="text-secondary">No students have reached 3 D/E weeks.</td></tr>
+          <% } %>
+          <% followUpRecords.forEach((record) => { %>
+            <tr>
+              <td>
+                <input class="form-check-input" type="checkbox" name="studentIds" value="<%= record.student._id %>" <%= record.student.followUpContacted ? "checked disabled" : "" %>>
+                <% if (record.student.followUpContacted) { %>
+                  <span class="small text-secondary ms-1">Saved</span>
+                <% } %>
+              </td>
+              <td><%= record.student.studentName %></td>
+              <td><%= record.student.studentId %></td>
+              <td><%= record.student.studentEmail %></td>
+              <td><%= record.student.phone || "" %></td>
+              <td><%= record.student.level %></td>
+              <td><%= record.student.year %> <%= record.student.term %></td>
+              <td><%= record.student.courseDay %></td>
+              <td><%= record.student.classGroup %></td>
+              <td><%= record.deWeeks.map((week) => `Week ${week}`).join(", ") %></td>
+              <td><%= record.deRecords %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </form>
+
+  <% if (query.studentId) { %>
+    <div class="content-card mt-4">
+      <h2 class="h5 mb-3">Student History: <%= query.studentId %></h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Level</th>
+              <th>Term</th>
+              <th>Day</th>
+              <th>Class</th>
+              <th>Week</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Quality</th>
+              <th>Attention</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!studentHistory.length) { %>
+              <tr><td colspan="11" class="text-secondary">No history found.</td></tr>
+            <% } %>
+            <% studentHistory.forEach((record) => { %>
+              <tr>
+                <td><%= record.student.studentName %></td>
+                <td><%= record.student.level %></td>
+                <td><%= record.student.year %> <%= record.student.term %></td>
+                <td><%= record.student.courseDay %></td>
+                <td><%= record.student.classGroup %></td>
+                <td>Week <%= record.week %></td>
+                <td><%= record.subject %></td>
+                <td><span class="badge text-bg-light border"><%= record.status %></span></td>
+                <td><%= record.overallQuality || "" %></td>
+                <td><%= record.attention || "No" %></td>
+                <td><%= record.note %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</div>

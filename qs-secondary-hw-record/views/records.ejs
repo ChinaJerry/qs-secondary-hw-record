@@ -1,0 +1,127 @@
+<div class="container-fluid px-4">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Weekly Marking</p>
+      <h1>Homework Records</h1>
+      <p class="text-secondary mb-0">Select the working week, then update homework status and notes.</p>
+    </div>
+  </div>
+
+  <form class="content-card row g-3 align-items-end mb-4" method="get" action="/records">
+    <%- include("partials/filter-fields", { query }) %>
+    <div class="col-md-3 col-xl-2">
+      <label class="form-label">Working Week</label>
+      <input type="number" min="1" max="12" name="week" class="form-control" value="<%= query.week || "" %>" placeholder="Required">
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <label class="form-label">Subject</label>
+      <select name="subject" class="form-select">
+        <option value="">All Subjects</option>
+        <% constants.SUBJECTS.forEach((subject) => { %>
+          <option value="<%= subject %>" <%= query.subject === subject ? "selected" : "" %>><%= subject %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-3 col-xl-2">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All Status</option>
+        <% constants.STATUSES.forEach((status) => { %>
+          <option value="<%= status.code %>" <%= query.status === status.code ? "selected" : "" %>><%= status.code %> - <%= status.label %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-4 col-xl-3">
+      <label class="form-label">Student ID</label>
+      <input type="search" name="studentId" class="form-control" value="<%= query.studentId || "" %>" placeholder="Exact ID">
+    </div>
+    <div class="col-md-4 col-xl-3 d-flex gap-2">
+      <button class="btn btn-primary flex-fill">Search</button>
+      <a href="/records" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+
+  <form method="post" action="/records/update" class="content-card">
+    <input type="hidden" name="returnQuery" value="<%= new URLSearchParams(query).toString() %>">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+      <div>
+        <h2 class="h5 mb-1">Record List</h2>
+        <p class="text-secondary mb-0">
+          <% if (weekRequired) { %>
+            Please select a working week to create or view homework records.
+          <% } else { %>
+            Showing up to 500 records for Week <%= query.week %>. Use filters for faster marking.
+          <% } %>
+        </p>
+      </div>
+      <button class="btn btn-primary">Save Changes</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle record-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>ID</th>
+            <th>Level</th>
+            <th>Term</th>
+            <th>Day</th>
+            <th>Class</th>
+            <th>Week</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Overall Quality</th>
+            <th>Attention</th>
+            <th>Note</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!records.length) { %>
+            <tr><td colspan="13" class="text-secondary">No records found. Import students first or adjust filters.</td></tr>
+          <% } %>
+          <% records.forEach((record) => { %>
+            <tr>
+              <td><%= record.student.studentName %></td>
+              <td><%= record.student.studentId %></td>
+              <td><%= record.student.level %></td>
+              <td><%= record.student.year %> <%= record.student.term %></td>
+              <td><%= record.student.courseDay %></td>
+              <td><span class="class-pill"><%= record.student.classGroup %></span></td>
+              <td>Week <%= record.week %></td>
+              <td><%= record.subject %></td>
+              <td>
+                <select name="status[<%= record._id %>]" class="form-select form-select-sm status-select status-<%= record.status %>">
+                  <% constants.STATUSES.forEach((status) => { %>
+                    <option value="<%= status.code %>" <%= record.status === status.code ? "selected" : "" %>><%= status.code %></option>
+                  <% }) %>
+                </select>
+              </td>
+              <td>
+                <input name="overallQuality[<%= record._id %>]" class="form-control form-control-sm quality-input" value="<%= record.overallQuality || "" %>" placeholder="Quality comment">
+              </td>
+              <td>
+                <select name="attention[<%= record._id %>]" class="form-select form-select-sm attention-select">
+                  <option value="No" <%= (record.attention || "No") === "No" ? "selected" : "" %>>No</option>
+                  <option value="Yes" <%= record.attention === "Yes" ? "selected" : "" %>>Yes</option>
+                </select>
+              </td>
+              <td>
+                <input name="note[<%= record._id %>]" class="form-control form-control-sm" value="<%= record.note || "" %>" placeholder="Add note">
+              </td>
+              <td>
+                <button
+                  class="btn btn-outline-danger btn-sm"
+                  formmethod="post"
+                  formaction="/records/<%= record._id %>/delete"
+                  onclick="return confirm('Delete this homework record?')"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>

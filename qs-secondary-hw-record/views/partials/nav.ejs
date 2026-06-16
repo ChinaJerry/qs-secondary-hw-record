@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/dashboard">
+      <img src="/img/qslogo.png" alt="Qs logo" class="brand-logo">
+      <span>Qs Secondary HW Record</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item">
+          <a class="nav-link <%= path === "/dashboard" ? "active" : "" %>" href="/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= path.startsWith("/records") ? "active" : "" %>" href="/records">Records</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= path.startsWith("/import") ? "active" : "" %>" href="/import">Import Students</a>
+        </li>
+        <li class="nav-item">
+          <form method="post" action="/logout" class="m-0">
+            <button class="btn btn-outline-primary btn-sm">Sign Out</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

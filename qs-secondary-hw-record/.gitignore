@@ -1,0 +1,8 @@
+.env
+node_modules/
+.npm-cache/
+.mongodb-data/
+.mongodb-binaries/
+uploads/
+.vercel/
+*.log
