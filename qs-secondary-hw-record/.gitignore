@@ -7,3 +7,4 @@ uploads/
 .vercel/
 *.log
 .vercel
+data/

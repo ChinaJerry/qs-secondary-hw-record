@@ -5,11 +5,11 @@ const { initDb } = require("./db");
 
 async function start() {
   await initDb();
-  console.log("PostgreSQL connected");
+  console.log("Local database ready");
 
   const app = createApp();
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
   const host = process.env.HOST || "127.0.0.1";
   app.listen(port, host, () => {
     console.log(`Qs Secondary HW Record is running on http://${host}:${port}`);

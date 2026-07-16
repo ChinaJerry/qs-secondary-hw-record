@@ -1,2 +1,2 @@
-// Homework record data is stored in PostgreSQL through db.js.
+// Homework record data is stored locally through db.js.
 module.exports = {};

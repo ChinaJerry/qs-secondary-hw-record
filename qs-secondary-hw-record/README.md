@@ -1,6 +1,6 @@
 # Qs Secondary HW Record
 
-A Node.js, PostgreSQL/Neon, and Bootstrap homework checking system for Qs secondary classes.
+A local Node.js and Bootstrap homework checking system for Qs secondary classes.
 
 ## Features
 
@@ -24,7 +24,7 @@ A Node.js, PostgreSQL/Neon, and Bootstrap homework checking system for Qs second
 ## Setup
 
 1. Copy `.env.example` to `.env`.
-2. Set `DATABASE_URL` to a PostgreSQL connection string such as Neon.
+2. The app stores data locally in `data/local-db.json`.
 3. Install dependencies:
 
 ```bash
@@ -42,39 +42,4 @@ Default login:
 - Username: `Admin`
 - Password: `QsAdmin`
 
-Open `http://localhost:3000`.
-
-## Deploy to Vercel
-
-This project can run on Vercel as a Node.js Function through `api/index.js`.
-
-Before deploying, create a hosted PostgreSQL database such as Neon.
-
-Set these Vercel Environment Variables:
-
-```text
-DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require&channel_binding=require
-SESSION_SECRET=use-a-long-random-secret
-ADMIN_USERNAME=Admin
-ADMIN_PASSWORD=use-a-strong-password
-```
-
-Then deploy from this folder:
-
-```zsh
-cd "/Users/jinlangwu/Documents/New project/qs-secondary-hw-record"
-vercel
-```
-
-For production:
-
-```zsh
-vercel --prod
-```
-
-Vercel project settings:
-
-- Framework Preset: `Other`
-- Build Command: `npm run vercel-build`
-- Output Directory: leave empty
-- Install Command: `npm install`
+Open `http://127.0.0.1:3001`.

@@ -1,2 +1,2 @@
-// Student data is stored in PostgreSQL through db.js.
+// Student data is stored locally through db.js.
 module.exports = {};

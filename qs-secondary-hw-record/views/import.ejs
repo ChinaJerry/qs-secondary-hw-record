@@ -8,6 +8,10 @@
   </div>
 
   <div class="content-card">
+    <div class="mb-3">
+      <h2 class="h5 mb-1">Upload Full Class List</h2>
+      <p class="text-secondary mb-0">Use this when the selected class list should be replaced by a new Excel file.</p>
+    </div>
     <form method="post" action="/import" enctype="multipart/form-data" class="row g-3">
       <div class="col-md-4 col-xl-3">
         <label class="form-label">Level</label>
@@ -51,6 +55,70 @@
       </div>
       <div class="col-12">
         <button class="btn btn-primary px-4">Upload Class List</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="content-card mt-4">
+    <div class="mb-3">
+      <h2 class="h5 mb-1">Manual Add Student</h2>
+      <p class="text-secondary mb-0">Use this for students who join during the term. This will not remove any existing students.</p>
+    </div>
+    <form method="post" action="/import/manual" class="row g-3">
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Level</label>
+        <select name="level" class="form-select" required>
+          <% constants.LEVELS.forEach((level) => { %>
+            <option value="<%= level %>"><%= level %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Year</label>
+        <input type="number" name="year" class="form-control" value="2026" required>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Term</label>
+        <select name="term" class="form-select" required>
+          <% constants.TERMS.forEach((term) => { %>
+            <option value="<%= term %>" <%= term === "T2" ? "selected" : "" %>><%= term %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Course Day</label>
+        <select name="courseDay" class="form-select" required>
+          <% constants.COURSE_DAYS.forEach((day) => { %>
+            <option value="<%= day %>"><%= day %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Class</label>
+        <select name="classGroup" class="form-select" required>
+          <% constants.CLASS_GROUPS.forEach((group) => { %>
+            <option value="<%= group %>"><%= group %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Student Name</label>
+        <input type="text" name="studentName" class="form-control" required>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Student ID</label>
+        <input type="text" name="studentId" class="form-control" required>
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Student Email</label>
+        <input type="email" name="studentEmail" class="form-control">
+      </div>
+      <div class="col-md-4 col-xl-3">
+        <label class="form-label">Phone</label>
+        <input type="text" name="phone" class="form-control">
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary px-4">Add Student</button>
       </div>
     </form>
   </div>

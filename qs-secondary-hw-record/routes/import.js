@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const xlsx = require("xlsx");
 const os = require("os");
-const { query } = require("../db");
+const { addOrUpdateStudent, importClassList } = require("../db");
 const { requireAdmin, setFlash } = require("./middleware");
 
 const router = express.Router();
@@ -45,7 +45,6 @@ router.post("/", requireAdmin, upload.single("studentFile"), async (req, res, ne
       classGroup: req.body.classGroup
     };
     const studentRowsById = new Map();
-    let imported = 0;
     let skipped = 0;
 
     for (const row of rows) {
@@ -67,57 +66,53 @@ router.post("/", requireAdmin, upload.single("studentFile"), async (req, res, ne
       });
     }
 
-    const uploadedIds = [...studentRowsById.keys()];
-    const removedResult = await query(
-      `
-        DELETE FROM students
-        WHERE level = $1
-          AND year = $2
-          AND term = $3
-          AND course_day = $4
-          AND class_group = $5
-          AND NOT (student_code = ANY($6::text[]))
-      `,
-      [cohort.level, cohort.year, cohort.term, cohort.courseDay, cohort.classGroup, uploadedIds]
-    );
-
-    for (const studentRow of studentRowsById.values()) {
-      await query(
-        `
-          INSERT INTO students (
-            student_name, student_code, student_email, phone,
-            level, year, term, course_day, class_group, active, updated_at
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE, NOW())
-          ON CONFLICT (student_code, level, year, term, course_day, class_group)
-          DO UPDATE SET
-            student_name = EXCLUDED.student_name,
-            student_email = EXCLUDED.student_email,
-            phone = EXCLUDED.phone,
-            active = TRUE,
-            updated_at = NOW()
-        `,
-        [
-          studentRow.studentName,
-          studentRow.studentId,
-          studentRow.studentEmail,
-          studentRow.phone,
-          cohort.level,
-          cohort.year,
-          cohort.term,
-          cohort.courseDay,
-          cohort.classGroup
-        ]
-      );
-      imported += 1;
-    }
+    const result = await importClassList(cohort, [...studentRowsById.values()]);
 
     setFlash(
       req,
       "success",
-      `Import completed. ${imported} students in this class list, ${removedResult.rowCount} old students removed, ${skipped} rows skipped.`
+      `Import completed. ${result.imported} students in this class list, ${result.removed} old students removed, ${skipped} rows skipped.`
     );
     return res.redirect("/records");
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/manual", requireAdmin, async (req, res, next) => {
+  try {
+    const studentName = String(req.body.studentName || "").trim();
+    const studentId = String(req.body.studentId || "").trim();
+
+    if (!studentName || !studentId) {
+      setFlash(req, "danger", "Student Name and Student ID are required.");
+      return res.redirect("/import");
+    }
+
+    const result = await addOrUpdateStudent(
+      {
+        level: req.body.level,
+        year: Number(req.body.year),
+        term: req.body.term,
+        courseDay: req.body.courseDay,
+        classGroup: req.body.classGroup
+      },
+      {
+        studentName,
+        studentId,
+        studentEmail: String(req.body.studentEmail || "").trim(),
+        phone: String(req.body.phone || "").trim()
+      }
+    );
+
+    setFlash(
+      req,
+      "success",
+      result.created
+        ? `Student ${studentName} has been added.`
+        : `Student ${studentName} already existed in this class and has been updated.`
+    );
+    return res.redirect("/import");
   } catch (error) {
     return next(error);
   }
