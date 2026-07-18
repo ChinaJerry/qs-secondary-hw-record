@@ -81,7 +81,10 @@
           <% } %>
           <% records.forEach((record) => { %>
             <tr>
-              <td><%= record.student.studentName %></td>
+              <td>
+                <input type="hidden" name="recordIds[]" value="<%= record._id %>">
+                <%= record.student.studentName %>
+              </td>
               <td><%= record.student.studentId %></td>
               <td><%= record.student.level %></td>
               <td><%= record.student.year %> <%= record.student.term %></td>
@@ -90,23 +93,23 @@
               <td>Week <%= record.week %></td>
               <td><%= record.subject %></td>
               <td>
-                <select name="status[<%= record._id %>]" class="form-select form-select-sm status-select status-<%= record.status %>">
+                <select name="status_<%= record._id %>" class="form-select form-select-sm status-select status-<%= record.status %>">
                   <% constants.STATUSES.forEach((status) => { %>
                     <option value="<%= status.code %>" <%= record.status === status.code ? "selected" : "" %>><%= status.code %></option>
                   <% }) %>
                 </select>
               </td>
               <td>
-                <input name="overallQuality[<%= record._id %>]" class="form-control form-control-sm quality-input" value="<%= record.overallQuality || "" %>" placeholder="Quality comment">
+                <input name="overallQuality_<%= record._id %>" class="form-control form-control-sm quality-input" value="<%= record.overallQuality || "" %>" placeholder="Quality comment">
               </td>
               <td>
-                <select name="attention[<%= record._id %>]" class="form-select form-select-sm attention-select">
+                <select name="attention_<%= record._id %>" class="form-select form-select-sm attention-select">
                   <option value="No" <%= (record.attention || "No") === "No" ? "selected" : "" %>>No</option>
                   <option value="Yes" <%= record.attention === "Yes" ? "selected" : "" %>>Yes</option>
                 </select>
               </td>
               <td>
-                <input name="note[<%= record._id %>]" class="form-control form-control-sm" value="<%= record.note || "" %>" placeholder="Add note">
+                <input name="note_<%= record._id %>" class="form-control form-control-sm" value="<%= record.note || "" %>" placeholder="Add note">
               </td>
               <td>
                 <button

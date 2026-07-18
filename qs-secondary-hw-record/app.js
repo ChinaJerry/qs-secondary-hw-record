@@ -13,7 +13,7 @@ function createApp() {
   app.use(expressLayouts);
   app.set("layout", "layout");
 
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.urlencoded({ extended: true, parameterLimit: 10000 }));
   app.use(express.json());
   app.use(express.static(path.join(__dirname, "public")));
 

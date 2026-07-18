@@ -12,6 +12,11 @@ const { SUBJECTS } = require("../config/constants");
 
 const router = express.Router();
 
+function asArray(value) {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
 function buildStudentFilters(query) {
   const filters = { active: true };
   ["level", "term", "courseDay", "classGroup"].forEach((field) => {
@@ -70,19 +75,15 @@ router.get("/", requireAdmin, async (req, res, next) => {
 
 router.post("/update", requireAdmin, async (req, res, next) => {
   try {
-    const statuses = req.body.status || {};
-    const notes = req.body.note || {};
-    const overallQualities = req.body.overallQuality || {};
-    const attentionValues = req.body.attention || {};
-    const recordIds = Object.keys(statuses);
+    const recordIds = asArray(req.body.recordIds);
 
     await updateRecords(
       recordIds.map((recordId) => ({
         id: recordId,
-        status: statuses[recordId],
-        note: notes[recordId] || "",
-        overallQuality: overallQualities[recordId] || "",
-        attention: attentionValues[recordId] === "Yes" ? "Yes" : "No"
+        status: req.body[`status_${recordId}`],
+        note: req.body[`note_${recordId}`] || "",
+        overallQuality: req.body[`overallQuality_${recordId}`] || "",
+        attention: req.body[`attention_${recordId}`] === "Yes" ? "Yes" : "No"
       }))
     );
 
