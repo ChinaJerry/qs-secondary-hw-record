@@ -3,6 +3,7 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const expressLayouts = require("express-ejs-layouts");
 const constants = require("./config/constants");
+const { initDb } = require("./db");
 
 function createApp() {
   const app = express();
@@ -29,6 +30,15 @@ function createApp() {
       }
     })
   );
+
+  app.use(async (req, res, next) => {
+    try {
+      await initDb();
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.use((req, res, next) => {
     res.locals.currentUser = req.session.user || null;

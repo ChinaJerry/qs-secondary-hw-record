@@ -7,6 +7,7 @@ const dataFile = path.join(dataDir, "local-db.json");
 
 let db;
 let pool;
+let initPromise;
 
 function usePostgres() {
   return Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL);
@@ -64,11 +65,17 @@ function saveDb() {
 }
 
 async function initDb() {
-  if (usePostgres()) {
-    await initPostgres();
-    return;
+  if (!initPromise) {
+    initPromise = (async () => {
+      if (usePostgres()) {
+        await initPostgres();
+        return;
+      }
+      loadDb();
+    })();
   }
-  loadDb();
+
+  return initPromise;
 }
 
 function nowIso() {
