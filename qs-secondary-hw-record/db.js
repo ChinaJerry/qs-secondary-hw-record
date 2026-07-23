@@ -359,6 +359,28 @@ function studentHistory(studentId) {
     .sort((a, b) => Number(a.week) - Number(b.week) || a.subject.localeCompare(b.subject));
 }
 
+function localExportBackupData() {
+  const store = loadDb();
+  const studentMap = new Map(store.students.map((student) => [String(student._id), student]));
+  return {
+    students: [...store.students].sort((a, b) =>
+      `${a.level}-${a.year}-${a.term}-${a.courseDay}-${a.classGroup}-${a.studentName}`.localeCompare(
+        `${b.level}-${b.year}-${b.term}-${b.courseDay}-${b.classGroup}-${b.studentName}`
+      )
+    ),
+    homeworkRecords: [...store.homeworkRecords]
+      .map((record) => ({
+        ...record,
+        student: studentMap.get(String(record.studentId)) || null
+      }))
+      .sort((a, b) =>
+        `${a.student?.level || ""}-${a.student?.studentName || ""}-${a.week}-${a.subject}`.localeCompare(
+          `${b.student?.level || ""}-${b.student?.studentName || ""}-${b.week}-${b.subject}`
+        )
+      )
+  };
+}
+
 function localMarkFollowUpContacted(studentIds) {
   const set = new Set(studentIds.map(String));
   for (const student of loadDb().students) {
@@ -669,6 +691,51 @@ async function pgArchiveStudent(id) {
   await pgQuery("UPDATE students SET active = FALSE, updated_at = NOW() WHERE id = $1", [id]);
 }
 
+async function pgExportBackupData() {
+  const students = await pgQuery(`
+    SELECT *
+    FROM students
+    ORDER BY level, year, term, course_day, class_group, student_name
+  `);
+  const homeworkRecords = await pgQuery(`
+    SELECT
+      r.id AS record_id,
+      r.student_id AS record_student_id,
+      r.week,
+      r.subject,
+      r.status,
+      r.note,
+      r.overall_quality,
+      r.attention,
+      r.is_deleted,
+      r.deleted_at,
+      r.created_at AS record_created_at,
+      r.updated_at AS record_updated_at,
+      s.*
+    FROM homework_records r
+    LEFT JOIN students s ON s.id = r.student_id
+    ORDER BY s.level, s.student_name, r.week, r.subject
+  `);
+  return {
+    students: students.rows.map(studentFromRow),
+    homeworkRecords: homeworkRecords.rows.map((row) => ({
+      _id: String(row.record_id),
+      studentId: String(row.record_student_id),
+      week: row.week,
+      subject: row.subject,
+      status: row.status,
+      note: row.note || "",
+      overallQuality: row.overall_quality || "",
+      attention: row.attention || "No",
+      isDeleted: Boolean(row.is_deleted),
+      deletedAt: row.deleted_at,
+      createdAt: row.record_created_at,
+      updatedAt: row.record_updated_at,
+      student: row.id ? studentFromRow(row) : null
+    }))
+  };
+}
+
 async function pgStatusSummary(studentFilters, week, subject) {
   const records = await pgGetRecords({ studentFilters, week, subject, limit: Number.MAX_SAFE_INTEGER });
   const summary = new Map();
@@ -729,6 +796,7 @@ module.exports = {
   countStudents: (...args) => (usePostgres() ? pgCountStudents(...args) : countStudents(...args)),
   deleteRecord: (...args) => (usePostgres() ? pgDeleteRecord(...args) : localDeleteRecord(...args)),
   ensureWeekRecords: (...args) => (usePostgres() ? pgEnsureWeekRecords(...args) : localEnsureWeekRecords(...args)),
+  exportBackupData: (...args) => (usePostgres() ? pgExportBackupData(...args) : localExportBackupData(...args)),
   followUpRecords: (...args) => (usePostgres() ? pgFollowUpRecords(...args) : followUpRecords(...args)),
   getRecords: (...args) => (usePostgres() ? pgGetRecords(...args) : getRecords(...args)),
   getStudents: (...args) => (usePostgres() ? pgGetStudents(...args) : localGetStudents(...args)),
