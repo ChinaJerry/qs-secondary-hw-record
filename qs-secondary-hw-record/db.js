@@ -64,15 +64,36 @@ function saveDb() {
   fs.writeFileSync(dataFile, JSON.stringify(db, null, 2));
 }
 
-async function initDb() {
-  if (!initPromise) {
-    initPromise = (async () => {
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function initWithRetry() {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
       if (usePostgres()) {
         await initPostgres();
         return;
       }
       loadDb();
-    })();
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      await wait(250 * attempt);
+    }
+  }
+}
+
+async function initDb() {
+  if (!initPromise) {
+    initPromise = initWithRetry().catch((error) => {
+      initPromise = null;
+      throw error;
+    });
   }
 
   return initPromise;
