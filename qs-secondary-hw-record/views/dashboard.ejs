@@ -6,7 +6,14 @@
       <p class="text-secondary mb-0">Monitor completion by level, term, subject, week, and class.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-      <a href="/dashboard/export-backup" class="btn btn-outline-primary">Download Full Backup</a>
+      <form method="post" action="/dashboard/backups">
+        <button
+          class="btn btn-outline-primary"
+          onclick="return confirm('Create a secure database backup snapshot now? No file will be downloaded.')"
+        >
+          Create Secure Backup
+        </button>
+      </form>
       <a href="/import" class="btn btn-primary">Import Students</a>
     </div>
   </div>
@@ -109,6 +116,41 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="content-card mt-4">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+      <div>
+        <h2 class="h5 mb-1">Secure Database Backups</h2>
+        <p class="text-secondary mb-0">Backups are saved inside the database. Full data is not downloaded from this page.</p>
+      </div>
+      <span class="badge text-bg-light border align-self-start">Latest 5</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Created At</th>
+            <th>Created By</th>
+            <th>Students</th>
+            <th>Homework Records</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!backupSnapshots.length) { %>
+            <tr><td colspan="4" class="text-secondary">No secure backups have been created yet.</td></tr>
+          <% } %>
+          <% backupSnapshots.forEach((backup) => { %>
+            <tr>
+              <td><%= backup.createdAt ? new Date(backup.createdAt).toLocaleString("en-AU") : "" %></td>
+              <td><%= backup.createdBy %></td>
+              <td><%= backup.studentCount %></td>
+              <td><%= backup.homeworkRecordCount %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
     </div>
   </div>
 

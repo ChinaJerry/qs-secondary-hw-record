@@ -28,8 +28,10 @@ function emptyDb() {
   return {
     nextStudentId: 1,
     nextRecordId: 1,
+    nextBackupId: 1,
     students: [],
-    homeworkRecords: []
+    homeworkRecords: [],
+    backupSnapshots: []
   };
 }
 
@@ -49,8 +51,10 @@ function loadDb() {
   db = JSON.parse(fs.readFileSync(dataFile, "utf8"));
   db.nextStudentId ||= 1;
   db.nextRecordId ||= 1;
+  db.nextBackupId ||= 1;
   db.students ||= [];
   db.homeworkRecords ||= [];
+  db.backupSnapshots ||= [];
   return db;
 }
 
@@ -381,6 +385,31 @@ function localExportBackupData() {
   };
 }
 
+function localCreateBackupSnapshot(createdBy = "Admin") {
+  const store = loadDb();
+  const snapshotData = localExportBackupData();
+  const backup = {
+    _id: String(store.nextBackupId++),
+    createdAt: nowIso(),
+    createdBy,
+    studentCount: snapshotData.students.length,
+    homeworkRecordCount: snapshotData.homeworkRecords.length,
+    snapshotData
+  };
+
+  store.backupSnapshots.push(backup);
+  saveDb();
+  return backup;
+}
+
+function localListBackupSnapshots(limit = 5) {
+  return loadDb()
+    .backupSnapshots
+    .map(({ snapshotData, ...backup }) => backup)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    .slice(0, limit);
+}
+
 function localMarkFollowUpContacted(studentIds) {
   const set = new Set(studentIds.map(String));
   for (const student of loadDb().students) {
@@ -462,6 +491,17 @@ async function initPostgres() {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW(),
       UNIQUE (student_id, week, subject)
+    );
+  `);
+
+  await pgQuery(`
+    CREATE TABLE IF NOT EXISTS backup_snapshots (
+      id BIGSERIAL PRIMARY KEY,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      created_by TEXT DEFAULT 'Admin',
+      student_count INTEGER NOT NULL DEFAULT 0,
+      homework_record_count INTEGER NOT NULL DEFAULT 0,
+      snapshot_data JSONB NOT NULL
     );
   `);
 }
@@ -736,6 +776,50 @@ async function pgExportBackupData() {
   };
 }
 
+async function pgCreateBackupSnapshot(createdBy = "Admin") {
+  const snapshotData = await pgExportBackupData();
+  const result = await pgQuery(
+    `
+      INSERT INTO backup_snapshots (
+        created_by, student_count, homework_record_count, snapshot_data
+      )
+      VALUES ($1, $2, $3, $4::jsonb)
+      RETURNING *
+    `,
+    [
+      createdBy,
+      snapshotData.students.length,
+      snapshotData.homeworkRecords.length,
+      JSON.stringify(snapshotData)
+    ]
+  );
+
+  return backupSnapshotFromRow(result.rows[0]);
+}
+
+async function pgListBackupSnapshots(limit = 5) {
+  const result = await pgQuery(
+    `
+      SELECT id, created_at, created_by, student_count, homework_record_count
+      FROM backup_snapshots
+      ORDER BY created_at DESC
+      LIMIT $1
+    `,
+    [limit]
+  );
+  return result.rows.map(backupSnapshotFromRow);
+}
+
+function backupSnapshotFromRow(row) {
+  return {
+    _id: String(row.id),
+    createdAt: row.created_at,
+    createdBy: row.created_by || "Admin",
+    studentCount: row.student_count || 0,
+    homeworkRecordCount: row.homework_record_count || 0
+  };
+}
+
 async function pgStatusSummary(studentFilters, week, subject) {
   const records = await pgGetRecords({ studentFilters, week, subject, limit: Number.MAX_SAFE_INTEGER });
   const summary = new Map();
@@ -794,6 +878,7 @@ module.exports = {
   addOrUpdateStudent: (...args) => (usePostgres() ? pgAddOrUpdateStudent(...args) : localAddOrUpdateStudent(...args)),
   archiveStudent: (...args) => (usePostgres() ? pgArchiveStudent(...args) : localArchiveStudent(...args)),
   countStudents: (...args) => (usePostgres() ? pgCountStudents(...args) : countStudents(...args)),
+  createBackupSnapshot: (...args) => (usePostgres() ? pgCreateBackupSnapshot(...args) : localCreateBackupSnapshot(...args)),
   deleteRecord: (...args) => (usePostgres() ? pgDeleteRecord(...args) : localDeleteRecord(...args)),
   ensureWeekRecords: (...args) => (usePostgres() ? pgEnsureWeekRecords(...args) : localEnsureWeekRecords(...args)),
   exportBackupData: (...args) => (usePostgres() ? pgExportBackupData(...args) : localExportBackupData(...args)),
@@ -802,6 +887,7 @@ module.exports = {
   getStudents: (...args) => (usePostgres() ? pgGetStudents(...args) : localGetStudents(...args)),
   importClassList: (...args) => (usePostgres() ? pgImportClassList(...args) : localImportClassList(...args)),
   initDb,
+  listBackupSnapshots: (...args) => (usePostgres() ? pgListBackupSnapshots(...args) : localListBackupSnapshots(...args)),
   markFollowUpContacted: (...args) => (usePostgres() ? pgMarkFollowUpContacted(...args) : localMarkFollowUpContacted(...args)),
   statusSummary: (...args) => (usePostgres() ? pgStatusSummary(...args) : statusSummary(...args)),
   studentHistory: (...args) => (usePostgres() ? pgStudentHistory(...args) : studentHistory(...args)),
