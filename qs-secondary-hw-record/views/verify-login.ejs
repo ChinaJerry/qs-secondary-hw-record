@@ -1,0 +1,35 @@
+<section class="login-panel">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <img src="/img/qslogo.png" alt="Qs logo" class="login-logo">
+      <h1 class="h4 mt-3 mb-1">Verify Login</h1>
+      <p class="text-secondary mb-0">Enter the 6-digit code sent to <%= maskedEmail %>.</p>
+    </div>
+
+    <form method="post" action="/login/verify" class="vstack gap-3">
+      <div>
+        <label class="form-label">Verification Code</label>
+        <input
+          class="form-control form-control-lg otp-input"
+          type="text"
+          name="code"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          autocomplete="one-time-code"
+          required
+          autofocus
+        >
+      </div>
+      <button class="btn btn-primary btn-lg w-100">Verify & Sign In</button>
+    </form>
+
+    <form method="post" action="/login/resend-code" class="mt-3">
+      <button class="btn btn-outline-primary w-100" type="submit">Resend Code</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/login" class="small text-secondary">Back to login</a>
+    </div>
+  </div>
+</section>

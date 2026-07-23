@@ -64,6 +64,13 @@ body {
   object-fit: contain;
 }
 
+.otp-input {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
 .page-heading {
   display: flex;
   align-items: center;
